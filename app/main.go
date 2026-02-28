@@ -29,6 +29,25 @@ func main() {
 		panic("Env variable OPENROUTER_API_KEY not found")
 	}
 
+	tools := []openai.ChatCompletionToolUnionParam{
+		openai.ChatCompletionFunctionTool(
+			openai.FunctionDefinitionParam{
+				Name:        "Read",
+				Description: openai.String("Read and return the contents of a file"),
+				Parameters: openai.FunctionParameters{
+					"type": "object",
+					"properties": map[string]any{
+						"file_path": map[string]any{
+							"type":        "string",
+							"description": "The path to the file to read",
+						},
+					},
+					"required": []string{"file_path"},
+				},
+			},
+		),
+	}
+
 	client := openai.NewClient(option.WithAPIKey(apiKey), option.WithBaseURL(baseUrl))
 	resp, err := client.Chat.Completions.New(context.Background(),
 		openai.ChatCompletionNewParams{
@@ -42,6 +61,7 @@ func main() {
 					},
 				},
 			},
+			Tools: tools,
 		},
 	)
 	if err != nil {
